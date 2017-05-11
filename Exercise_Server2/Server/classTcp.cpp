@@ -169,18 +169,16 @@ int TCPServer::ClientMainThread(int myID) {
 
 			switch (eventpacket.flag) {
 			case 1:
-				puzzleEventFunc(eventpacket);
+				puzzleEventFunc(eventpacket, myID);
 				break;
 			case 2:
-				playerkillEventFunc(eventpacket);
+				playerkillEventFunc(eventpacket, myID);
 				break;
 			case 3:
 				animationEventFunc(eventpacket);
 				break;
 			case 4:
 
-				break;
-			default:
 				break;
 			}
 
@@ -195,30 +193,45 @@ int TCPServer::ClientMainThread(int myID) {
 	return 0;
 }
 
-void TCPServer::puzzleEventFunc(eventPacket packet){
+void TCPServer::puzzleEventFunc(eventPacket packet, int ID){
 	eventPacket eventpacket = packet;
+	int myID = ID;
 	int sendResult;
 
-	if (eventpacket.Set == 0) {
-		for (int i = 0; i < CLIENT_MAX; i++) {
+	//본인이 보낸 eventpacket을 자기자신이 받지 않기 위해 인자로 ID 값을 받아서 처리하고 있음
+	for (int i = 0; i < CLIENT_MAX; i++) {
+		if (i != myID) {
 			sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
+		}
+	}
+
+	/*if (eventpacket.Set == 0) {
+		for (int i = 0; i < CLIENT_MAX; i++) {
+			if (i != myID) {
+				sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
+			}
 		}
 	}
 	else if (eventpacket.Set == 1) {
 		for (int i = 0; i < CLIENT_MAX; i++) {
-			sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
+			if (i != myID) {
+				sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
+			}
 		}
 	}
 	else if (eventpacket.Set == 2) {
 		for (int i = 0; i < CLIENT_MAX; i++) {
-			sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
+			if (i != myID) {
+				sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
+			}
 		}
-	}
+	}*/
 }
 
-void TCPServer::playerkillEventFunc(eventPacket packet){
+void TCPServer::playerkillEventFunc(eventPacket packet, int ID){
 	mutex mutex;
 	eventPacket eventpacket = packet;
+	int myID = ID;
 	int sendResult;
 
 	mutex.lock();
@@ -228,12 +241,14 @@ void TCPServer::playerkillEventFunc(eventPacket packet){
 	cout << "killed ID : " << eventpacket.id << endl;
 
 	for (int i = 0; i < CLIENT_MAX; i++) {
-		sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
+		if (i != myID) {				//본인이 보낸 eventpacket을 자기 자신이 받지 않도록 설정
+			sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
+		}
 	}
 }
 
 
-void TCPServer::trapEventFunc() {
+void TCPServer::trapEventFunc(eventPacket packet, int ID) {
 
 }
 

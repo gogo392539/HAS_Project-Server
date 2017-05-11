@@ -89,7 +89,10 @@ namespace Client
 
     public struct eventPacket
     {
-        public int flag;
+        public int flag;        // 1 -> puzzle
+                                // 2 -> PK
+                                // 3 -> animation
+                                // 4 -> trap
         public int id;
         public int eventSet;
     }
@@ -182,7 +185,6 @@ namespace Client
             Byte[] tempData = new Byte[4];
             tempData = BitConverter.GetBytes(Clients[myID].id);
             UDPclient.SendTo(tempData, tempData.Length, SocketFlags.None, serverIpep);
-            //UDPclient.ReceiveFrom(tempData, SocketFlags.None, ref remoteIpep);
         }
 
         public void UDPThreadStart()
@@ -239,7 +241,7 @@ namespace Client
                 temp.pos.rotY = -1;
                 temp.pos.rotZ = -1;
 
-                UDPclient.ReceiveFrom(tempUDPdata, SocketFlags.None, ref remoteIpep);                       //2번째 인자로 SocketFlags.None 추가 (4월 11일)
+                UDPclient.ReceiveFrom(tempUDPdata, SocketFlags.None, ref remoteIpep);             
                 temp = (Client_State)byteAndStruct.ByteToStructure(tempUDPdata, temp.GetType());
 
                 switch (temp.id)
@@ -337,12 +339,6 @@ namespace Client
             RecvThread.Start();
         }
 
-        public void threadJoin()
-        {
-            SendThread.Join();
-            RecvThread.Join();
-        }
-
         public void recvRandomIdx()
         {
             Byte[] tempRandomPosData = new Byte[sizeof(int) * clientPosIndex.Length];
@@ -358,63 +354,151 @@ namespace Client
             eventPacket eventpacket;
 
             Byte[] eventData = new Byte[12];
+
             while (csNetworkManager.quit)
             {
-                if (csNetworkManager.flag == 1)
+                switch (csNetworkManager.flag)
                 {
-                    for (int i = 0; i < csMain.MAXCOUNT.MAX_PUZZLE; i++)
-                    {
-                        if (puzzle[i].puzzleSet == 2)
+                    case 1:
+                        for (int i = 0; i < csMain.MAXCOUNT.MAX_PUZZLE; i++)
                         {
-                            eventpacket.eventSet = 2;
-                            eventpacket.flag = 1;
-                            eventpacket.id = puzzle[i].id;
-                            eventData = byteAndStruct.StructureToByte(eventpacket);
-                            TCPclient.Send(eventData);
-                            setPuzzle(i, -1);
-                            continue;
+                            switch (puzzle[i].puzzleSet)
+                            {
+                                case 2:
+                                    eventpacket.eventSet = 2;
+                                    eventpacket.flag = 1;
+                                    eventpacket.id = puzzle[i].id;
+                                    eventData = byteAndStruct.StructureToByte(eventpacket);
+                                    TCPclient.Send(eventData);
+                                    setPuzzle(i, -1);
+                                    break;
+                                case 1:
+                                    eventpacket.eventSet = 1;
+                                    eventpacket.flag = 1;
+                                    eventpacket.id = puzzle[i].id;
+                                    eventData = byteAndStruct.StructureToByte(eventpacket);
+                                    TCPclient.Send(eventData);
+                                    setPuzzle(i, -1);
+                                    break;
+                                case 0:
+                                    eventpacket.eventSet = 0;
+                                    eventpacket.flag = 1;
+                                    eventpacket.id = puzzle[i].id;
+                                    eventData = byteAndStruct.StructureToByte(eventpacket);
+                                    TCPclient.Send(eventData);
+                                    setPuzzle(i, -1);
+                                    break;
+                            }
+
+                            //if (puzzle[i].puzzleSet == 2)
+                            //{
+                            //    eventpacket.eventSet = 2;
+                            //    eventpacket.flag = 1;
+                            //    eventpacket.id = puzzle[i].id;
+                            //    eventData = byteAndStruct.StructureToByte(eventpacket);
+                            //    TCPclient.Send(eventData);
+                            //    setPuzzle(i, -1);
+                            //    continue;
+                            //}
+                            //else if (puzzle[i].puzzleSet == 1)
+                            //{
+                            //    eventpacket.eventSet = 1;
+                            //    eventpacket.flag = 1;
+                            //    eventpacket.id = puzzle[i].id;
+                            //    eventData = byteAndStruct.StructureToByte(eventpacket);
+                            //    TCPclient.Send(eventData);
+                            //    setPuzzle(i, -1);
+                            //    continue;
+                            //}
+                            //else if (puzzle[i].puzzleSet == 0)
+                            //{
+                            //    eventpacket.eventSet = 0;
+                            //    eventpacket.flag = 1;
+                            //    eventpacket.id = puzzle[i].id;
+                            //    eventData = byteAndStruct.StructureToByte(eventpacket);
+                            //    TCPclient.Send(eventData);
+                            //    setPuzzle(i, -1);
+                            //    continue;
+                            //}
                         }
-                        else if (puzzle[i].puzzleSet == 1)
-                        {
-                            eventpacket.eventSet = 1;
-                            eventpacket.flag = 1;
-                            eventpacket.id = puzzle[i].id;
-                            eventData = byteAndStruct.StructureToByte(eventpacket);
-                            TCPclient.Send(eventData);
-                            setPuzzle(i, -1);
-                            continue;
-                        }
-                        else if (puzzle[i].puzzleSet == 0)
-                        {
-                            eventpacket.eventSet = 0;
-                            eventpacket.flag = 1;
-                            eventpacket.id = puzzle[i].id;
-                            eventData = byteAndStruct.StructureToByte(eventpacket);
-                            TCPclient.Send(eventData);
-                            setPuzzle(i, -1);
-                            continue;
-                        }
-                    }
+                            break;
+                    case 2:
+                        eventpacket.flag = 2;
+                        eventpacket.id = pkID;
+                        eventpacket.eventSet = 0;
+                        eventData = byteAndStruct.StructureToByte(eventpacket);
+                        TCPclient.Send(eventData);
+                        csNetworkManager.flag = -1;
+                        pkID = -1;
+                        break;
+                    case 3:
+                        eventpacket.flag = 3;
+                        eventpacket.id = myID;
+                        eventpacket.eventSet = ani[myID].aniSet;
+                        eventData = byteAndStruct.StructureToByte(eventpacket);
+                        TCPclient.Send(eventData);
+                        csNetworkManager.flag = -1;
+                        break;
+                    case 4:
+                        // trap event 처리를 위한 곳
+                        break;
                 }
-                else if(csNetworkManager.flag == 2)
-                {
-                    eventpacket.flag = 2;
-                    eventpacket.id = pkID;
-                    eventpacket.eventSet = 0;
-                    eventData = byteAndStruct.StructureToByte(eventpacket);
-                    TCPclient.Send(eventData);
-                    csNetworkManager.flag = -1;
-                    pkID = -1;
-                }
-                else if(csNetworkManager.flag == 3)
-                {
-                    eventpacket.flag = 3;
-                    eventpacket.id = myID;
-                    eventpacket.eventSet = ani[myID].aniSet;
-                    eventData = byteAndStruct.StructureToByte(eventpacket);
-                    TCPclient.Send(eventData);
-                    csNetworkManager.flag = -1;
-                }
+
+                //if (csNetworkManager.flag == 1)
+                //{
+                //    for (int i = 0; i < csMain.MAXCOUNT.MAX_PUZZLE; i++)
+                //    {
+                //        if (puzzle[i].puzzleSet == 2)
+                //        {
+                //            eventpacket.eventSet = 2;
+                //            eventpacket.flag = 1;
+                //            eventpacket.id = puzzle[i].id;
+                //            eventData = byteAndStruct.StructureToByte(eventpacket);
+                //            TCPclient.Send(eventData);
+                //            setPuzzle(i, -1);
+                //            continue;
+                //        }
+                //        else if (puzzle[i].puzzleSet == 1)
+                //        {
+                //            eventpacket.eventSet = 1;
+                //            eventpacket.flag = 1;
+                //            eventpacket.id = puzzle[i].id;
+                //            eventData = byteAndStruct.StructureToByte(eventpacket);
+                //            TCPclient.Send(eventData);
+                //            setPuzzle(i, -1);
+                //            continue;
+                //        }
+                //        else if (puzzle[i].puzzleSet == 0)
+                //        {
+                //            eventpacket.eventSet = 0;
+                //            eventpacket.flag = 1;
+                //            eventpacket.id = puzzle[i].id;
+                //            eventData = byteAndStruct.StructureToByte(eventpacket);
+                //            TCPclient.Send(eventData);
+                //            setPuzzle(i, -1);
+                //            continue;
+                //        }
+                //    }
+                //}
+                //else if(csNetworkManager.flag == 2)
+                //{
+                //    eventpacket.flag = 2;
+                //    eventpacket.id = pkID;
+                //    eventpacket.eventSet = 0;
+                //    eventData = byteAndStruct.StructureToByte(eventpacket);
+                //    TCPclient.Send(eventData);
+                //    csNetworkManager.flag = -1;
+                //    pkID = -1;
+                //}
+                //else if(csNetworkManager.flag == 3)
+                //{
+                //    eventpacket.flag = 3;
+                //    eventpacket.id = myID;
+                //    eventpacket.eventSet = ani[myID].aniSet;
+                //    eventData = byteAndStruct.StructureToByte(eventpacket);
+                //    TCPclient.Send(eventData);
+                //    csNetworkManager.flag = -1;
+                //}
             }
         }
 
@@ -430,29 +514,57 @@ namespace Client
             {
                 TCPclient.Receive(eventData);
                 eventpacket = (eventPacket)byteAndStruct.ByteToStructure(eventData, eventpacket.GetType());
-                if (eventpacket.flag == 1)
+
+                switch (eventpacket.flag)
                 {
-                    if (eventpacket.eventSet == 2)
-                    {
-                        csMain.puzzleSetArray[eventpacket.id] = 2;
-                    }
-                    else if (eventpacket.eventSet == 1)
-                    {
-                        csMain.puzzleSetArray[eventpacket.id] = 1;
-                    }
-                    else if (eventpacket.eventSet == 0)
-                    {
-                        csMain.puzzleSetArray[eventpacket.id] = 0;
-                    }
+                    case 1:     //퍼즐 이벤트 세팅
+                        switch (eventpacket.eventSet)
+                        {
+                            case 2:
+                                csMain.puzzleSetArray[eventpacket.id] = 2;
+                                break;
+                            case 1:
+                                csMain.puzzleSetArray[eventpacket.id] = 1;
+                                break;
+                            case 0:
+                                csMain.puzzleSetArray[eventpacket.id] = 0;
+                                break;
+                        }
+                        break;
+                    case 2:     //잡기 이벤트 셋팅
+                        csMain.killrecvID = eventpacket.id;
+                        break;
+                    case 3:     //플레이어 에니메이션 세팅
+                        ani[eventpacket.id].aniSet = eventpacket.eventSet;
+                        break;
+                    case 4:     //방해물 이벤트 셋팅
+                        //trap event 처리를 위한 부분
+                        break;
                 }
-                else if(eventpacket.flag == 2)
-                {
-                    csMain.killrecvID = eventpacket.id;
-                }
-                else if (eventpacket.flag == 3)
-                {
-                    ani[eventpacket.id].aniSet = eventpacket.eventSet;
-                }
+
+                //if (eventpacket.flag == 1)
+                //{
+                //    if (eventpacket.eventSet == 2)
+                //    {
+                //        csMain.puzzleSetArray[eventpacket.id] = 2;
+                //    }
+                //    else if (eventpacket.eventSet == 1)
+                //    {
+                //        csMain.puzzleSetArray[eventpacket.id] = 1;
+                //    }
+                //    else if (eventpacket.eventSet == 0)
+                //    {
+                //        csMain.puzzleSetArray[eventpacket.id] = 0;
+                //    }
+                //}
+                //else if(eventpacket.flag == 2)
+                //{
+                //    csMain.killrecvID = eventpacket.id;
+                //}
+                //else if (eventpacket.flag == 3)
+                //{
+                //    ani[eventpacket.id].aniSet = eventpacket.eventSet;
+                //}
             }
         }
 
@@ -466,19 +578,9 @@ namespace Client
             ani[myID].aniSet = aniSet;
         }
 
-        public int[] getclientPosIndex()
+        public Puzzle[] getPuzzleState()
         {
-            return clientPosIndex;
-        }
-
-        public int getMyID()
-        {
-            return myID;
-        }
-
-        public void closedTCP()
-        {
-            TCPclient.Close();
+            return puzzle;
         }
 
         public void setPuzzle(int id, int state)
@@ -487,9 +589,9 @@ namespace Client
             puzzle[id].puzzleSet = state;
         }
 
-        public Puzzle[] getPuzzleState()
+        public int getKillID()
         {
-            return puzzle;
+            return pkID;
         }
 
         public void setKillID(int id)
@@ -505,9 +607,25 @@ namespace Client
             }
         }
 
-        public int getKillID()
+        public int[] getclientPosIndex()
         {
-            return pkID;
+            return clientPosIndex;
+        }
+
+        public int getMyID()
+        {
+            return myID;
+        }
+
+        public void threadJoin()
+        {
+            SendThread.Join();
+            RecvThread.Join();
+        }
+
+        public void closedTCP()
+        {
+            TCPclient.Close();
         }
     }
 

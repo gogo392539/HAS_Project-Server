@@ -36,8 +36,8 @@ public:
 
 	int ClientMainThread(int myID);
 
-	void puzzleEventFunc(eventPacket packet);
-	void playerkillEventFunc(eventPacket packet);
-	void trapEventFunc();
+	void puzzleEventFunc(eventPacket packet, int ID);
+	void playerkillEventFunc(eventPacket packet, int ID);
+	void trapEventFunc(eventPacket packet, int ID);
 	void animationEventFunc(eventPacket packet);
 };

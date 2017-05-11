@@ -13,6 +13,7 @@ using namespace std;
 #define CLIENT_MAX 5
 #define DEFAULT_PORT 36872
 #define PUZZLE_MAX 2
+#define TRAP_MAX 2
 
 #define EVENTPACKET_SIZE 12
 
