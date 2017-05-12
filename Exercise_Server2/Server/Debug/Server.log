@@ -1,3 +1,6 @@
-﻿  classTcp.cpp
+﻿  server.cpp
+  classUdp.cpp
+  classTcp.cpp
+  코드를 생성하고 있습니다...
   Server.vcxproj -> C:\Users\seo\Documents\HAS_Project-Server\Exercise_Server2\Debug\Server.exe
   Server.vcxproj -> C:\Users\seo\Documents\HAS_Project-Server\Exercise_Server2\Debug\Server.pdb (Full PDB)

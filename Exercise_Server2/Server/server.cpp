@@ -15,7 +15,8 @@ int main()
 
 		TCPServer TCPserver = TCPServer(clientState, &connectNum);
 		TCPserver.serverStart();				//TCP server 설정
-		cout << "TCP start" << endl;	
+		cout << "--------------------------------------------------------------" << endl;
+		cout << "Server Start" << endl;	
 		cout << endl;
 
 		UDPServer UDPserver = UDPServer(clientState, &connectNum);
@@ -24,7 +25,6 @@ int main()
 		TCPserver.clientAccept();				//TCP server가 client의 접속 요청을 받아들이고 client들에게 ID값을 전달
 
 		UDPserver.receiveClientAddr();			//UDP server가 client들과 통신을 위해 client들의 주소값을 저장하고 sync를 맞추는 부분
-
 
 		UDPserver.recvUDPThreadFunc();			//UDP server가 client들의 좌표정보를 받는 thread
 		TCPserver.sendRandomIdx();				//client들에게 random index전달
@@ -41,8 +41,9 @@ int main()
 		TCPserver.TCPServerClosed();
 		UDPserver.UDPServerClosed();
 
-		cout << "server closed" << endl;
 		cout << endl;
+		cout << "server closed" << endl;
+		cout <<"--------------------------------------------------------------"<< endl;
 	}
 	
 	return 0;
