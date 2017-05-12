@@ -50,12 +50,10 @@ void TCPServer::clientAccept() {
 }
 
 void TCPServer::TCPServerClosed() {
-	closesocket(serverListenSock);
-
 	for (int i = 0; i < CLIENT_MAX; i++) {
 		closesocket(clientState[i].clientTCPSock);
 	}
-	
+	closesocket(serverListenSock);	
 	WSACleanup();
 }
 
@@ -111,7 +109,6 @@ void TCPServer::TCPThreadJoin() {
 	}
 	SuspendThread(tempThread.native_handle());			//일시 정지
 	TerminateThread(tempThread.native_handle(), 0);		//종료
-
 }
 
 int TCPServer::TCPThreadFunc() {
@@ -128,9 +125,8 @@ int TCPServer::TCPThreadFunc() {
 
 	for (int j = 0; j < CLIENT_MAX; j++) {
 		Client_Thread[j].join();
-	} //for end
-	
-	//cout << "TCP thread end" << endl;
+	} //for end	
+	cout << "TCP thread end" << endl;
 	return 0;
 }
 
@@ -144,19 +140,8 @@ int TCPServer::ClientMainThread(int myID) {
 		ZeroMemory(eventData, 0);
 		eventpacket = { -1, -1, -1 };
 		
-		recvResult = recvn(clientState[myID].clientTCPSock, eventData, EVENTPACKET_SIZE, 0);
-		/*
-		if (recvResult == 0) {
-			cout << "client#" << myID << "closed!" << endl;
-			mutex.lock();
-			(*connectNum)--;
-			clientState[myID].id = -1;
-			mutex.unlock();
-			break;
-		}
-		*/
+		recvResult = recvn(clientState[myID].clientTCPSock, eventData, EVENTPACKET_SIZE, 0);	
 		if (recvResult == -1) {
-			//cout << "Client Thread " << myID << " error" << endl;
 			cout << "client#" << myID << "closed!" << endl;
 			mutex.lock();
 			(*connectNum)--;
@@ -178,18 +163,14 @@ int TCPServer::ClientMainThread(int myID) {
 				animationEventFunc(eventpacket);
 				break;
 			case 4:
-
+				trapEventFunc(eventpacket, myID);
 				break;
 			}
-
 		}
-
 	} //while end
 
 	delete[]eventData;
-
 	cout << "Client Thread #" << myID << " end!" << endl;
-
 	return 0;
 }
 
@@ -247,11 +228,6 @@ void TCPServer::playerkillEventFunc(eventPacket packet, int ID){
 	}
 }
 
-
-void TCPServer::trapEventFunc(eventPacket packet, int ID) {
-
-}
-
 void TCPServer::animationEventFunc(eventPacket packet){
 	eventPacket eventpacket = packet;
 	int sendResult;
@@ -261,5 +237,17 @@ void TCPServer::animationEventFunc(eventPacket packet){
 			sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
 		}
 	}
+}
 
+void TCPServer::trapEventFunc(eventPacket packet, int ID) {
+	eventPacket eventpacket = packet;
+	int myID = ID;
+	int sendResult;
+
+	//본인이 보낸 eventpacket을 자기자신이 받지 않기 위해 인자로 ID 값을 받아서 처리하고 있음
+	for (int i = 0; i < CLIENT_MAX; i++) {
+		if (i != myID) {
+			sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
+		}
+	}
 }

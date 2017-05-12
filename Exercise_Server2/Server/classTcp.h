@@ -38,6 +38,6 @@ public:
 
 	void puzzleEventFunc(eventPacket packet, int ID);
 	void playerkillEventFunc(eventPacket packet, int ID);
-	void trapEventFunc(eventPacket packet, int ID);
 	void animationEventFunc(eventPacket packet);
+	void trapEventFunc(eventPacket packet, int ID);
 };

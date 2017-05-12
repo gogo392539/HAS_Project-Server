@@ -10,7 +10,7 @@
 
 using namespace std;
 
-#define CLIENT_MAX 5
+#define CLIENT_MAX 2
 #define DEFAULT_PORT 36872
 #define PUZZLE_MAX 2
 #define TRAP_MAX 2

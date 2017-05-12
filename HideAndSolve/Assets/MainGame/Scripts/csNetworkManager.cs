@@ -146,7 +146,7 @@ namespace Client
         }
     }
 
-    public class UDPPosClient
+    public class UDPClient
     {
         private IPEndPoint serverIpep;
         private IPEndPoint sender;
@@ -155,21 +155,16 @@ namespace Client
         private int myID;
         private Client_State[] Clients;
 
-        private bool clientSet;
-
         private ThreadStart UDPSendStart;
         private ThreadStart UDPRecvStart;
         private Thread sendThread;
         private Thread recvThread;
 
-
-        public UDPPosClient(int id, Client_State[] clients)
+        public UDPClient(int id, Client_State[] clients)
         {
             myID = id;
             Clients = clients;
             Clients[myID].id = myID;
-
-            clientSet = true;
         }
 
         public void UDPServerInit()
@@ -197,17 +192,6 @@ namespace Client
             recvThread.Start();
         }
 
-        public void threadJoin()
-        {
-            sendThread.Join();
-            recvThread.Join();
-        }
-
-        public void closedUDP()
-        {
-            UDPclient.Close();
-        }
-
         public void SendPosFunc()
         {
             Byte[] UDPdata = new Byte[28];
@@ -217,14 +201,9 @@ namespace Client
                 {
                     UDPdata = byteAndStruct.StructureToByte(Clients[myID]);
                     UDPclient.SendTo(UDPdata, UDPdata.Length, SocketFlags.None, serverIpep);
-                }
-                else
-                {
-                    clientSet = false;
-                }
+                }                
                 Thread.Sleep(10);
             } // while end
-
         }
 
         public void RecvPosFunc()
@@ -265,7 +244,6 @@ namespace Client
                         break;
                 }
             } // while end
-
         }
 
         public void setPos(float x, float y, float z, float rotx, float roty, float rotz)
@@ -282,6 +260,17 @@ namespace Client
         {
             return Clients;
         }
+
+        public void threadJoin()
+        {
+            sendThread.Join();
+            recvThread.Join();
+        }
+
+        public void closedUDP()
+        {
+            UDPclient.Close();
+        }
     }
 
     public class TCPClient
@@ -295,13 +284,13 @@ namespace Client
         private ThreadStart RecvThreadStart;
         private Thread RecvThread;
 
-        private Trap[] trap;
-        private clientAnimation[] ani;
-        private Puzzle[] puzzle;
         private int myID;
         private int[] clientPosIndex;                   // client의 시작 위치를 설정하기 위한 변수
 
         private int pkID;
+        private Trap[] trap;
+        private clientAnimation[] ani;
+        private Puzzle[] puzzle;
 
         public TCPClient(Client_State[] clients , Puzzle[] TcpPuzzle, Trap[] TcpTrap, clientAnimation[] TcpAni)
         {
@@ -635,7 +624,7 @@ namespace Client
         static public bool quit;
 
         static public TCPClient TCPclient;
-        static public UDPPosClient UDPclient;
+        static public UDPClient UDPclient;
 
         private void Start()
         {
@@ -660,7 +649,7 @@ namespace Client
             TCPclient.TCPServerInit();
             TCPclient.recvClientID();
 
-            UDPclient = new UDPPosClient(TCPclient.getMyID(), Clients);
+            UDPclient = new UDPClient(TCPclient.getMyID(), Clients);
             UDPclient.UDPServerInit();
             UDPclient.snedClientAddr();
 

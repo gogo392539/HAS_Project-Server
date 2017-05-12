@@ -32,14 +32,14 @@ int main()
 
 		TCPserver.TCPThreadStart();
 
-		TCPserver.TCPThreadJoin();
-		cout << "TCP thread end" << endl;
-
 		UDPserver.UDPThreadJoin();
 		cout << "UDP thread end" << endl;
 
-		UDPserver.UDPServerClosed();
+		TCPserver.TCPThreadJoin();
+		cout << "TCP thread end" << endl;
+
 		TCPserver.TCPServerClosed();
+		UDPserver.UDPServerClosed();
 
 		cout << "server closed" << endl;
 		cout << endl;

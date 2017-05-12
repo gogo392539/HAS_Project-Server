@@ -8,7 +8,7 @@ public class csMain : MonoBehaviour
 {
     public class MAXCOUNT
     {
-        public const int MAX_CLIENT = 3;
+        public const int MAX_CLIENT = 2;
         public const int MAX_PUZZLE = 2;
         public const int MAX_TRAP = 2;
     }
