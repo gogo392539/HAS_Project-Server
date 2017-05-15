@@ -4,3 +4,9 @@ C:\Users\user\Documents\project_network_ex\gameChatClient\gameChatClient\bin\Deb
 C:\Users\user\Documents\project_network_ex\gameChatClient\gameChatClient\obj\Debug\gameChatClient.csprojResolveAssemblyReference.cache
 C:\Users\user\Documents\project_network_ex\gameChatClient\gameChatClient\obj\Debug\gameChatClient.exe
 C:\Users\user\Documents\project_network_ex\gameChatClient\gameChatClient\obj\Debug\gameChatClient.pdb
+C:\Users\seo\Documents\HAS_Project-Server\gameChatClient\gameChatClient\bin\Debug\gameChatClient.exe.config
+C:\Users\seo\Documents\HAS_Project-Server\gameChatClient\gameChatClient\obj\Debug\gameChatClient.exe
+C:\Users\seo\Documents\HAS_Project-Server\gameChatClient\gameChatClient\obj\Debug\gameChatClient.pdb
+C:\Users\seo\Documents\HAS_Project-Server\gameChatClient\gameChatClient\bin\Debug\gameChatClient.exe
+C:\Users\seo\Documents\HAS_Project-Server\gameChatClient\gameChatClient\bin\Debug\gameChatClient.pdb
+C:\Users\seo\Documents\HAS_Project-Server\gameChatClient\gameChatClient\obj\Debug\gameChatClient.csprojResolveAssemblyReference.cache

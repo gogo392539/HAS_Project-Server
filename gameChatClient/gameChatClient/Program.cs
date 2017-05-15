@@ -16,7 +16,7 @@ namespace gameChatClient
 {
     public class CONSTANTNUMBER
     {
-        public const int CLIENT_MAX = 1;
+        public const int CLIENT_MAX = 3;
         public const int DEFAULT_MESSAGA = 1024;
         public const int DEFAULT_PORT = 30000;
     }
@@ -38,7 +38,8 @@ namespace gameChatClient
         }
         // String을 바이트 배열로 변환 
         public static byte[] StringToByte(string str) {
-            byte[] StrByte = Encoding.UTF8.GetBytes(str);
+            //byte[] StrByte = Encoding.UTF8.GetBytes(str);
+            byte[] StrByte = Encoding.Default.GetBytes(str);
             return StrByte;
         }
 
@@ -93,10 +94,10 @@ namespace gameChatClient
 
             while (true)
             {
-                //Console.Write("입력 : ");
                 str = Console.ReadLine();
-                Console.WriteLine(str); //
+                //Console.WriteLine(str); //
                 sendData = ByteAndString.StringToByte(str);
+                //Console.WriteLine(sendData.Length); //
                 clientChatSock.Send(sendData);
             }
         }

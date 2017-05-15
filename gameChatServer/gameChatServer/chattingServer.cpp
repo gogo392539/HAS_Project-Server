@@ -3,7 +3,7 @@
 #include <WinSock2.h>
 #include <string>
 
-#define CLIENT_MAX 1
+#define CLIENT_MAX 3
 #define DEFAULT_PORT 30000
 #define DEFAULT_MESSAGE 1024
 
