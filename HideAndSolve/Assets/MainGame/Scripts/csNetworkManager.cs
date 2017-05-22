@@ -113,19 +113,19 @@ namespace Client
 
             for(int i=0; i< csMain.MAXCOUNT.MAX_PUZZLE; i++)
             {
-                puzzle[i].id = 0;
+                puzzle[i].id = i;
                 puzzle[i].puzzleSet = -1;
             }
 
             for(int i=0; i< csMain.MAXCOUNT.MAX_TRAP; i++)
             {
-                trap[i].id = 0;
+                trap[i].id = i;
                 trap[i].trapSet = -1;
             }
 
             for(int i=0; i< csMain.MAXCOUNT.MAX_CLIENT; i++)
             {
-                ani[i].id = 0;
+                ani[i].id = i;
                 ani[i].aniSet = -1;
             }
         }

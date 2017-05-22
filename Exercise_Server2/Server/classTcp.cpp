@@ -41,6 +41,7 @@ void TCPServer::clientAccept() {
 			ErrorHandling("accept()");
 
 		clientState[*connectNum].id = *connectNum;
+		cout << "connect" << *connectNum << endl;
 
 		int sendNum = sendn(clientState[*connectNum].clientTCPSock, (char*)&clientState[*connectNum].id, sizeof(clientState[*connectNum].id), 0);
 		if (sendNum == SOCKET_ERROR)
@@ -182,31 +183,10 @@ void TCPServer::puzzleEventFunc(eventPacket packet, int ID){
 	//본인이 보낸 eventpacket을 자기자신이 받지 않기 위해 인자로 ID 값을 받아서 처리하고 있음
 	for (int i = 0; i < CLIENT_MAX; i++) {
 		if (i != myID) {
+			cout << eventpacket.flag << eventpacket.id << eventpacket.Set << endl;	//
 			sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
 		}
 	}
-
-	/*if (eventpacket.Set == 0) {
-		for (int i = 0; i < CLIENT_MAX; i++) {
-			if (i != myID) {
-				sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
-			}
-		}
-	}
-	else if (eventpacket.Set == 1) {
-		for (int i = 0; i < CLIENT_MAX; i++) {
-			if (i != myID) {
-				sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
-			}
-		}
-	}
-	else if (eventpacket.Set == 2) {
-		for (int i = 0; i < CLIENT_MAX; i++) {
-			if (i != myID) {
-				sendResult = sendn(clientState[i].clientTCPSock, (char*)&eventpacket, EVENTPACKET_SIZE, 0);
-			}
-		}
-	}*/
 }
 
 void TCPServer::playerkillEventFunc(eventPacket packet, int ID){
