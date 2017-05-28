@@ -37,7 +37,6 @@ public class csStartPuzzle_hanzo : MonoBehaviour
     // 퍼즐의 ID 값
     private int id = 0;
 
-    // Use this for initialization
     private void Start()
     {
         text.SetActive(false);
@@ -45,6 +44,7 @@ public class csStartPuzzle_hanzo : MonoBehaviour
 
     private void Update()
     {
+        // 다른 플레이어가 퍼즐 완료
         if (csMain.puzzleSetArray[id] == 2)
         {
             Destroy(Puzzleobj);
@@ -59,6 +59,7 @@ public class csStartPuzzle_hanzo : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
+        // 내가 퍼즐을 풀러 들어감
         if (csMain.puzzleSetArray[id] == 0 && Input.GetKeyDown("z"))
         {
             checkStart = true;
@@ -74,6 +75,7 @@ public class csStartPuzzle_hanzo : MonoBehaviour
             csNetworkManager.TCPclient.setPuzzle(id, 1);
         }
 
+        // 내가 퍼즐을 완료함
         if (checkComplete)
         {
             checkComplete = false;
@@ -83,8 +85,11 @@ public class csStartPuzzle_hanzo : MonoBehaviour
             csMove.controller = other.gameObject.GetComponent<CharacterController>();
 
             csNetworkManager.TCPclient.setPuzzle(id, 2);
+            Destroy(Puzzleobj);
+            csMain.puzzleCount--;
         }
 
+        // 퍼즐을 풀다가 도망감
         if (checkGoback)
         {
             checkGoback = false;

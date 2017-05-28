@@ -9,13 +9,15 @@ private:
 	SOCKET serverListenSock;
 	ClientState* clientState;
 	SOCKADDR_IN serverTCPAddr;
-	SOCKADDR_IN clientTCPAddr;
+	SOCKADDR_IN clientTCPAddr;	//
 	int clientTCPAddrsz;
 	
 	thread TCPThread;
 	thread Client_Thread[CLIENT_MAX];
+	thread Accept_Thread[CLIENT_MAX];
+	int clientReadyNum;
 
-	//Puzzle puzzle[PUZZLE_MAX];
+	//accessPacket AccessState[CLIENT_MAX];
 	eventPacket eventpacket;
 
 	thread tempThread;
@@ -33,8 +35,11 @@ public:
 	void TCPThreadJoin();
 	void TCPThreadStart();
 	int TCPThreadFunc();
-
 	int ClientMainThread(int myID);
+
+	int AcceptThreadMain(int ID);
+	void AcceptThreadJoin();
+	void GameStart();
 
 	void puzzleEventFunc(eventPacket packet, int ID);
 	void playerkillEventFunc(eventPacket packet, int ID);

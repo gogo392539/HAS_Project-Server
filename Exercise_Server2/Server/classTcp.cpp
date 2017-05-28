@@ -8,6 +8,10 @@ TCPServer::TCPServer(ClientState clients[], int *clientNum) {
 	clientTCPAddrsz = sizeof(clientTCPAddr);
 	clientState = clients;
 	connectNum = clientNum;
+	/*for (int i = 0; i < CLIENT_MAX; i++) {
+		AccessState[i].id = i;
+		AccessState[i].set = 0;
+	}*/
 }
 
 void TCPServer::serverStart() {
@@ -34,19 +38,92 @@ void TCPServer::serverStart() {
 
 void TCPServer::clientAccept() {
 	//accept() and client에게 id값 전달 (연결 요청 수락)
-	while (*connectNum < CLIENT_MAX) {
-		clientTCPAddrsz = sizeof(clientTCPAddr);
-		clientState[*connectNum].clientTCPSock = accept(serverListenSock, (sockaddr*)&clientTCPAddr, &clientTCPAddrsz);
-		if (clientState[*connectNum].clientTCPSock == INVALID_SOCKET)
+	for (int i = 0; i < CLIENT_MAX; i++) {
+		Accept_Thread[i] = thread([&] {AcceptThreadMain(i); });
+	}
+}
+
+int TCPServer::AcceptThreadMain(int ID) {
+	mutex mx;
+	//char* LDATA = new char[4];
+	bool check = true;
+	while (check) {
+		//accept()
+		clientTCPAddrsz = sizeof(clientState[ID].clientTCPAddr);
+		clientState[ID].clientTCPSock = accept(serverListenSock, (sockaddr*)&clientState[ID].clientTCPAddr, &clientTCPAddrsz);
+		if (clientState[ID].clientTCPSock == INVALID_SOCKET)
 			ErrorHandling("accept()");
 
-		clientState[*connectNum].id = *connectNum;
-		cout << "connect" << *connectNum << endl;
+		clientState[ID].id = ID;
+		cout <<"Client#"<<ID<<" "<< "connect" << endl;
 
-		int sendNum = sendn(clientState[*connectNum].clientTCPSock, (char*)&clientState[*connectNum].id, sizeof(clientState[*connectNum].id), 0);
+		int sendNum = sendn(clientState[ID].clientTCPSock, (char*)&clientState[ID].id, sizeof(clientState[ID].id), 0);
 		if (sendNum == SOCKET_ERROR)
 			ErrorHandling("sendn");
+
+		mx.lock();
 		(*connectNum)++;
+		mx.unlock();
+
+		char* LDATA = new char[4];
+		while (1) {
+			ZeroMemory(LDATA, 0);
+			int recvNum = recvn(clientState[ID].clientTCPSock, LDATA, sizeof(LDATA), 0);
+			if (recvNum == -1) {
+				//client가 방에 들어와서 나가면 accept부터 다시 한다.
+				mx.lock();
+				(*connectNum)--;
+				mx.unlock();
+				cout << "client#" << ID << " " << "exit" << endl;
+				closesocket(clientState[ID].clientTCPSock);
+				break;
+			}
+			else {
+				//client가 방에 들어와서 ready button을 누르면 thread 종료
+				int readyValue = -1;
+				memcpy(&readyValue, LDATA, sizeof(int));
+				if (readyValue == 1) {
+					cout << "client#" << ID << " " << "ready" << endl;
+					check = false;
+					break;
+					//delete[] LDATA;
+					//return 0;
+				}
+			}
+			delete[] LDATA;
+		} // end while
+	} // end while
+	//cout << "AcceptThreadMain 종료" << endl;
+	return 0;
+}
+
+void TCPServer::GameStart() {
+	cout << "start1" << endl;
+	char *startData = new char[4];
+	int startValue = 0;
+	while (1) {
+		ZeroMemory(startData, 0);
+		//방장(일단 첫 번째 client를 방장으로 설정)으로부터 시작하겠다는 message 수신
+		int sendResult = recvn(clientState[0].clientTCPSock, startData, sizeof(startData), 0);
+		cout << "start3" << endl;
+		memcpy(&startValue, startData, sizeof(int));
+		if (startValue == 2) {
+
+			for (int i = 0; i < CLIENT_MAX; i++) {
+				//게임 시작 send
+				sendn(clientState[i].clientTCPSock, startData, sizeof(startData), 0);
+			}
+
+			cout << "Game Start!" << endl;
+			break;
+		}
+	}// end while
+	delete[] startData;
+}
+
+void TCPServer::AcceptThreadJoin() {
+	for (int i = 0; i < CLIENT_MAX; i++) {
+		Accept_Thread[i].join();
 	}
 }
 

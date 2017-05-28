@@ -6,13 +6,8 @@ using UnityEngine.SceneManagement;
 public class csKillPlayer : MonoBehaviour {
     public Material invisible_M;
 
-    // Use this for initialization
-    void Start () {
-		
-	}
-	
-	// Update is called once per frame
 	void Update () {
+        // 죽일 플레이어의 ID를 통해 상대방을 죽임
         if (csMain.killrecvID != -1)
         {
             csMain.userArray[csMain.killrecvID].GetComponent<Renderer>().material = invisible_M;
@@ -22,6 +17,7 @@ public class csKillPlayer : MonoBehaviour {
             csMain.playerCount--;
         }
 
+        // 플레이어 수가 한명남으면 게임오버 화면으로 넘어감
         if(csMain.playerCount == 1)
         {
             GotoGameOver();

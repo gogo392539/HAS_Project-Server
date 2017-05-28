@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+using Client;
+
 public class csSceneTrans : MonoBehaviour {
 
     public void GotoMain()

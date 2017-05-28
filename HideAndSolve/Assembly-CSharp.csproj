@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\MainGame\Scripts\csActiveTrap.cs" />
+     <Compile Include="Assets\MainGame\Scripts\csAnimator.cs" />
      <Compile Include="Assets\MainGame\Scripts\csCatch.cs" />
      <Compile Include="Assets\MainGame\Scripts\csDrawGizmo.cs" />
      <Compile Include="Assets\MainGame\Scripts\csExitDoor.cs" />
@@ -56,13 +57,13 @@
      <Compile Include="Assets\MainGame\Scripts\csMoveOther.cs" />
      <Compile Include="Assets\MainGame\Scripts\csNetworkManager.cs" />
      <Compile Include="Assets\MainGame\Scripts\csRandPos.cs" />
+     <Compile Include="Assets\MainGame\Scripts\csRandomID.cs" />
      <Compile Include="Assets\MainGame\Scripts\csStartPuzzle_hanzo.cs" />
      <Compile Include="Assets\MainGame\Scripts\csStartPuzzle_phara.cs" />
      <Compile Include="Assets\PuzzleGame\Scripts\ST_PuzzleDisplay_hanzo.cs" />
      <Compile Include="Assets\PuzzleGame\Scripts\ST_PuzzleDisplay_phara.cs" />
      <Compile Include="Assets\PuzzleGame\Scripts\ST_PuzzleTile_hanzo.cs" />
      <Compile Include="Assets\PuzzleGame\Scripts\ST_PuzzleTile_phara.cs" />
-     <Compile Include="Assets\SandBox\Script\csSandBox.cs" />
      <Compile Include="Assets\UI\Scripts\csSceneTrans.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>

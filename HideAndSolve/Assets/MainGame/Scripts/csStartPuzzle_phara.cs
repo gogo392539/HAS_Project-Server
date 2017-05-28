@@ -37,7 +37,6 @@ public class csStartPuzzle_phara : MonoBehaviour
     // 퍼즐 ID 세팅
     private int id = 1;
 
-    // Use this for initialization
     private void Start()
     {
         text.SetActive(false);
@@ -45,6 +44,7 @@ public class csStartPuzzle_phara : MonoBehaviour
 
     private void Update()
     {
+        // 다른 플레이어에 의해 퍼즐이 완료됨
         if(csMain.puzzleSetArray[id] == 2)
         {
             Destroy(Puzzleobj);
@@ -59,6 +59,7 @@ public class csStartPuzzle_phara : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
+        // 내가 퍼즐을 풀러 들어감
         if (csMain.puzzleSetArray[id] == 0 && Input.GetKeyDown("z"))
         {
             checkStart = true;
@@ -74,6 +75,7 @@ public class csStartPuzzle_phara : MonoBehaviour
             csNetworkManager.TCPclient.setPuzzle(id, 1);
         }
 
+        // 내가 퍼즐을 완료함
         if (checkComplete)
         {
             checkComplete = false;
@@ -83,8 +85,11 @@ public class csStartPuzzle_phara : MonoBehaviour
             csMove.controller = other.gameObject.GetComponent<CharacterController>();
 
             csNetworkManager.TCPclient.setPuzzle(id, 2);
+            Destroy(Puzzleobj);
+            csMain.puzzleCount--;
         }
 
+        // 내가 퍼즐은 풀다 도망감
         if (checkGoback)
         {
             checkGoback = false;
@@ -97,7 +102,6 @@ public class csStartPuzzle_phara : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        text.SetActive(false);
-        
+        text.SetActive(false);       
     }
 }

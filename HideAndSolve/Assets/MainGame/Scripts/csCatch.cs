@@ -9,15 +9,16 @@ public class csCatch : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other)
     {
+        // 상대방을 잡을 수 있을 경우 잡을 수 있다는 정보 표시
         if (other.gameObject.tag == "otherPlayer")
             CatchSign.SetActive(true);
     }
 
     private void OnTriggerStay(Collider other)
     {
+        // Z키를 이용해 상대방을 잡음
         if(other.gameObject.tag == "otherPlayer")
         {
- //           CatchSign.SetActive(true);
             if(Input.GetKeyDown(KeyCode.Z))
             {
                 CatchSign.SetActive(false);

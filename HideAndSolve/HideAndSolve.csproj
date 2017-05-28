@@ -75,7 +75,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\MainGame\Scripts\csActiveTrap.cs" />
+    <Compile Include="Assets\MainGame\Scripts\csAnimator.cs" />
     <Compile Include="Assets\MainGame\Scripts\csCatch.cs" />
     <Compile Include="Assets\MainGame\Scripts\csDrawGizmo.cs" />
     <Compile Include="Assets\MainGame\Scripts\csExitDoor.cs" />
@@ -85,13 +85,25 @@
     <Compile Include="Assets\MainGame\Scripts\csMoveOther.cs" />
     <Compile Include="Assets\MainGame\Scripts\csNetworkManager.cs" />
     <Compile Include="Assets\MainGame\Scripts\csRandPos.cs" />
+    <Compile Include="Assets\MainGame\Scripts\csRandomID.cs" />
+    <Compile Include="Assets\MainGame\Scripts\csStartPuzzle_diva.cs" />
     <Compile Include="Assets\MainGame\Scripts\csStartPuzzle_hanzo.cs" />
+    <Compile Include="Assets\MainGame\Scripts\csStartPuzzle_math.cs" />
     <Compile Include="Assets\MainGame\Scripts\csStartPuzzle_phara.cs" />
-    <Compile Include="Assets\PuzzleGame\Scripts\ST_PuzzleDisplay_hanzo.cs" />
-    <Compile Include="Assets\PuzzleGame\Scripts\ST_PuzzleDisplay_phara.cs" />
-    <Compile Include="Assets\PuzzleGame\Scripts\ST_PuzzleTile_hanzo.cs" />
-    <Compile Include="Assets\PuzzleGame\Scripts\ST_PuzzleTile_phara.cs" />
-    <Compile Include="Assets\SandBox\Script\csSandBox.cs" />
+    <Compile Include="Assets\PuzzleGame\MathPuzzle\Script\csButtonPress.cs" />
+    <Compile Include="Assets\PuzzleGame\MathPuzzle\Script\csGUIManager.cs" />
+    <Compile Include="Assets\PuzzleGame\MathPuzzle\Script\csGameManager.cs" />
+    <Compile Include="Assets\PuzzleGame\MathPuzzle\Script\csMathAndAnswer.cs" />
+    <Compile Include="Assets\PuzzleGame\MathPuzzle\Script\csTimeBarController.cs" />
+    <Compile Include="Assets\PuzzleGame\TilePuzzle\Scripts\ST_PuzzleDisplay_diva.cs" />
+    <Compile Include="Assets\PuzzleGame\TilePuzzle\Scripts\ST_PuzzleDisplay_hanzo.cs" />
+    <Compile Include="Assets\PuzzleGame\TilePuzzle\Scripts\ST_PuzzleDisplay_phara.cs" />
+    <Compile Include="Assets\PuzzleGame\TilePuzzle\Scripts\ST_PuzzleTile_diva.cs" />
+    <Compile Include="Assets\PuzzleGame\TilePuzzle\Scripts\ST_PuzzleTile_hanzo.cs" />
+    <Compile Include="Assets\PuzzleGame\TilePuzzle\Scripts\ST_PuzzleTile_phara.cs" />
+    <Compile Include="Assets\Trap\Script\csActiveRabbit.cs" />
+    <Compile Include="Assets\Trap\Script\csActiveTrap.cs" />
+    <Compile Include="Assets\UI\Scripts\csButtonManager.cs" />
     <Compile Include="Assets\UI\Scripts\csSceneTrans.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

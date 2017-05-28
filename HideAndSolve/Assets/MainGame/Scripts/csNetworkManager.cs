@@ -71,20 +71,23 @@ namespace Client
         public int id;
         public int trapSet;     // 0 -> 비활성화
                                 // 1 -> 활성화
+                                // 2 -> 작동
     }
 
     public struct clientAnimation
     {
         public int id;
-        public int aniSet;      // 0 -> 걷기
-                                // 1 -> 뛰기
-                                // 2 -> 점프
-                                // 3 -> 뒤로가기
-                                // 4 -> 잡기
-                                // 5 -> 승리 모션
-                                // 6 -> 패패 모션
-                                // 7 -> 인사
-                                // 8 -> 춤
+        public int aniSet;      // 0 -> 평상시
+                                // 1 -> 걷기
+                                // 2 -> 뛰기
+                                // 3 -> 점프
+                                // 4 -> 뒤로가기
+                                // 5 -> 잡기
+                                // 6 -> 승리 모션
+                                // 7 -> 패패 모션
+                                // 8 -> 인사
+                                // 9 -> 춤
+                                // 10 -> 하늘에 있음
     }
 
     public struct eventPacket
@@ -111,19 +114,19 @@ namespace Client
             ani = new clientAnimation[csMain.MAXCOUNT.MAX_CLIENT];
             pkID = -1;
 
-            for(int i=0; i< csMain.MAXCOUNT.MAX_PUZZLE; i++)
+            for (int i = 0; i < csMain.MAXCOUNT.MAX_PUZZLE; i++)
             {
                 puzzle[i].id = i;
                 puzzle[i].puzzleSet = -1;
             }
 
-            for(int i=0; i< csMain.MAXCOUNT.MAX_TRAP; i++)
+            for (int i = 0; i < csMain.MAXCOUNT.MAX_TRAP; i++)
             {
                 trap[i].id = i;
                 trap[i].trapSet = -1;
             }
 
-            for(int i=0; i< csMain.MAXCOUNT.MAX_CLIENT; i++)
+            for (int i = 0; i < csMain.MAXCOUNT.MAX_CLIENT; i++)
             {
                 ani[i].id = i;
                 ani[i].aniSet = -1;
@@ -192,6 +195,28 @@ namespace Client
             recvThread.Start();
         }
 
+        public void SendThreadCreate()
+        {
+            UDPSendStart = new ThreadStart(this.SendPosFunc);
+            sendThread = new Thread(UDPSendStart);
+        }
+
+        public void SendThreadStart()
+        {
+            sendThread.Start();
+        }
+
+        public void RecvThreadCreate()
+        {
+            UDPRecvStart = new ThreadStart(this.RecvPosFunc);
+            recvThread = new Thread(UDPRecvStart);
+        }
+        
+        public void RecvThreadStart()
+        {
+            recvThread.Start();
+        }
+
         public void SendPosFunc()
         {
             Byte[] UDPdata = new Byte[28];
@@ -201,7 +226,7 @@ namespace Client
                 {
                     UDPdata = byteAndStruct.StructureToByte(Clients[myID]);
                     UDPclient.SendTo(UDPdata, UDPdata.Length, SocketFlags.None, serverIpep);
-                }                
+                }
                 Thread.Sleep(10);
             } // while end
         }
@@ -220,7 +245,7 @@ namespace Client
                 temp.pos.rotY = -1;
                 temp.pos.rotZ = -1;
 
-                UDPclient.ReceiveFrom(tempUDPdata, SocketFlags.None, ref remoteIpep);             
+                UDPclient.ReceiveFrom(tempUDPdata, SocketFlags.None, ref remoteIpep);
                 temp = (Client_State)byteAndStruct.ByteToStructure(tempUDPdata, temp.GetType());
 
                 switch (temp.id)
@@ -284,6 +309,12 @@ namespace Client
         private ThreadStart RecvThreadStart;
         private Thread RecvThread;
 
+        private ThreadStart GameWaitThreadStart;
+        private Thread GameWaitThread;
+        private ThreadStart GameStartThreadStart;
+        private Thread GameStartThread;
+        private int GameStartSet;
+
         private int myID;
         private int[] clientPosIndex;                   // client의 시작 위치를 설정하기 위한 변수
 
@@ -292,7 +323,7 @@ namespace Client
         private clientAnimation[] ani;
         private Puzzle[] puzzle;
 
-        public TCPClient(Client_State[] clients , Puzzle[] TcpPuzzle, Trap[] TcpTrap, clientAnimation[] TcpAni)
+        public TCPClient(Client_State[] clients, Puzzle[] TcpPuzzle, Trap[] TcpTrap, clientAnimation[] TcpAni)
         {
             this.clients = clients;
             clientPosIndex = new int[csMain.MAXCOUNT.MAX_CLIENT];
@@ -301,6 +332,7 @@ namespace Client
             trap = TcpTrap;
             ani = TcpAni;
             pkID = -1;
+            GameStartSet = -1;
         }
 
         public void TCPServerInit()
@@ -312,9 +344,66 @@ namespace Client
 
         public void recvClientID()
         {
-            Byte[] tempTCPdata = new Byte[sizeof(int)];
-            TCPclient.Receive(tempTCPdata);
-            myID = BitConverter.ToInt32(tempTCPdata, 0);     // byte[] to int32 
+            Byte[] recvIDData = new Byte[sizeof(int)];
+            TCPclient.Receive(recvIDData);
+            myID = BitConverter.ToInt32(recvIDData, 0);     // byte[] to int32 
+        }
+
+        public void GameReady()
+        {
+            int readyValue = 1;
+            Byte[] readyData = new Byte[sizeof(int)];
+            readyData = BitConverter.GetBytes(readyValue);
+            TCPclient.Send(readyData);
+        }
+
+        public void GameExit()
+        {
+            //int exitValue = -1;
+            //Byte[] exitData = new Byte[sizeof(int)];
+            //exitData = BitConverter.GetBytes(exitValue);
+            //TCPclient.Send(exitData);
+            TCPclient.Close();
+        }
+
+        public void GameWait()
+        {
+            GameWaitThreadStart = new ThreadStart(this.recvGameWait);
+            GameWaitThread = new Thread(GameWaitThreadStart);
+            GameWaitThread.Start();
+        }
+
+        public void recvGameWait()
+        {
+            while (true)
+            {
+                int WaitValue = 0;
+                Byte[] WaitData = new Byte[sizeof(int)];
+                TCPclient.Receive(WaitData);
+                WaitValue = BitConverter.ToInt32(WaitData, 0);
+                if (WaitValue == 2)
+                {
+                    GameStartSet = 1;
+                    /////게임 시작//////
+                    break;
+                }
+            }
+        }
+
+        public int getGameStartSet()
+        {
+            return GameStartSet;
+        }
+
+        public void sendGameStart()
+        {
+            if (myID == 0)
+            {
+                int StartValue = 2;
+                Byte[] StartData = new Byte[sizeof(int)];
+                StartData = BitConverter.GetBytes(StartValue);
+                TCPclient.Send(StartData);
+            }          
         }
 
         public void TCPThreadStart()
@@ -378,39 +467,8 @@ namespace Client
                                     setPuzzle(i, -1);
                                     break;
                             }
-
-                            //if (puzzle[i].puzzleSet == 2)
-                            //{
-                            //    eventpacket.eventSet = 2;
-                            //    eventpacket.flag = 1;
-                            //    eventpacket.id = puzzle[i].id;
-                            //    eventData = byteAndStruct.StructureToByte(eventpacket);
-                            //    TCPclient.Send(eventData);
-                            //    setPuzzle(i, -1);
-                            //    continue;
-                            //}
-                            //else if (puzzle[i].puzzleSet == 1)
-                            //{
-                            //    eventpacket.eventSet = 1;
-                            //    eventpacket.flag = 1;
-                            //    eventpacket.id = puzzle[i].id;
-                            //    eventData = byteAndStruct.StructureToByte(eventpacket);
-                            //    TCPclient.Send(eventData);
-                            //    setPuzzle(i, -1);
-                            //    continue;
-                            //}
-                            //else if (puzzle[i].puzzleSet == 0)
-                            //{
-                            //    eventpacket.eventSet = 0;
-                            //    eventpacket.flag = 1;
-                            //    eventpacket.id = puzzle[i].id;
-                            //    eventData = byteAndStruct.StructureToByte(eventpacket);
-                            //    TCPclient.Send(eventData);
-                            //    setPuzzle(i, -1);
-                            //    continue;
-                            //}
                         }
-                            break;
+                        break;
                     case 2:
                         eventpacket.flag = 2;
                         eventpacket.id = pkID;
@@ -430,64 +488,38 @@ namespace Client
                         break;
                     case 4:
                         // trap event 처리를 위한 곳
+                        for (int i = 0; i < csMain.MAXCOUNT.MAX_TRAP; i++)
+                        {
+                            switch (trap[i].trapSet)
+                            {
+                                case 2:
+                                    eventpacket.eventSet = 2;
+                                    eventpacket.flag = 4;
+                                    eventpacket.id = trap[i].id;
+                                    eventData = byteAndStruct.StructureToByte(eventpacket);
+                                    TCPclient.Send(eventData);
+                                    setTrap(i, -1);
+                                    break;
+                                case 1:
+                                    eventpacket.eventSet = 1;
+                                    eventpacket.flag = 4;
+                                    eventpacket.id = trap[i].id;
+                                    eventData = byteAndStruct.StructureToByte(eventpacket);
+                                    TCPclient.Send(eventData);
+                                    setTrap(i, -1);
+                                    break;
+                                case 0:
+                                    eventpacket.eventSet = 0;
+                                    eventpacket.flag = 4;
+                                    eventpacket.id = trap[i].id;
+                                    eventData = byteAndStruct.StructureToByte(eventpacket);
+                                    TCPclient.Send(eventData);
+                                    setTrap(i, -1);
+                                    break;
+                            } 
+                        }
                         break;
-                }
-
-                //if (csNetworkManager.flag == 1)
-                //{
-                //    for (int i = 0; i < csMain.MAXCOUNT.MAX_PUZZLE; i++)
-                //    {
-                //        if (puzzle[i].puzzleSet == 2)
-                //        {
-                //            eventpacket.eventSet = 2;
-                //            eventpacket.flag = 1;
-                //            eventpacket.id = puzzle[i].id;
-                //            eventData = byteAndStruct.StructureToByte(eventpacket);
-                //            TCPclient.Send(eventData);
-                //            setPuzzle(i, -1);
-                //            continue;
-                //        }
-                //        else if (puzzle[i].puzzleSet == 1)
-                //        {
-                //            eventpacket.eventSet = 1;
-                //            eventpacket.flag = 1;
-                //            eventpacket.id = puzzle[i].id;
-                //            eventData = byteAndStruct.StructureToByte(eventpacket);
-                //            TCPclient.Send(eventData);
-                //            setPuzzle(i, -1);
-                //            continue;
-                //        }
-                //        else if (puzzle[i].puzzleSet == 0)
-                //        {
-                //            eventpacket.eventSet = 0;
-                //            eventpacket.flag = 1;
-                //            eventpacket.id = puzzle[i].id;
-                //            eventData = byteAndStruct.StructureToByte(eventpacket);
-                //            TCPclient.Send(eventData);
-                //            setPuzzle(i, -1);
-                //            continue;
-                //        }
-                //    }
-                //}
-                //else if(csNetworkManager.flag == 2)
-                //{
-                //    eventpacket.flag = 2;
-                //    eventpacket.id = pkID;
-                //    eventpacket.eventSet = 0;
-                //    eventData = byteAndStruct.StructureToByte(eventpacket);
-                //    TCPclient.Send(eventData);
-                //    csNetworkManager.flag = -1;
-                //    pkID = -1;
-                //}
-                //else if(csNetworkManager.flag == 3)
-                //{
-                //    eventpacket.flag = 3;
-                //    eventpacket.id = myID;
-                //    eventpacket.eventSet = ani[myID].aniSet;
-                //    eventData = byteAndStruct.StructureToByte(eventpacket);
-                //    TCPclient.Send(eventData);
-                //    csNetworkManager.flag = -1;
-                //}
+                }             
             }
         }
 
@@ -528,32 +560,20 @@ namespace Client
                         break;
                     case 4:     //방해물 이벤트 셋팅
                         //trap event 처리를 위한 부분
+                        switch (eventpacket.eventSet)
+                        {
+                            case 2:
+                                csMain.trapSetArray[eventpacket.id] = 2;
+                                break;
+                            case 1:
+                                csMain.trapSetArray[eventpacket.id] = 1;
+                                break;
+                            case 0:
+                                csMain.trapSetArray[eventpacket.id] = 0;
+                                break;
+                        }
                         break;
-                }
-
-                //if (eventpacket.flag == 1)
-                //{
-                //    if (eventpacket.eventSet == 2)
-                //    {
-                //        csMain.puzzleSetArray[eventpacket.id] = 2;
-                //    }
-                //    else if (eventpacket.eventSet == 1)
-                //    {
-                //        csMain.puzzleSetArray[eventpacket.id] = 1;
-                //    }
-                //    else if (eventpacket.eventSet == 0)
-                //    {
-                //        csMain.puzzleSetArray[eventpacket.id] = 0;
-                //    }
-                //}
-                //else if(eventpacket.flag == 2)
-                //{
-                //    csMain.killrecvID = eventpacket.id;
-                //}
-                //else if (eventpacket.flag == 3)
-                //{
-                //    ani[eventpacket.id].aniSet = eventpacket.eventSet;
-                //}
+                }                
             }
         }
 
@@ -564,6 +584,7 @@ namespace Client
 
         public void setAni(int aniSet)
         {
+            csNetworkManager.flag = 3;
             ani[myID].aniSet = aniSet;
         }
 
@@ -576,6 +597,12 @@ namespace Client
         {
             csNetworkManager.flag = 1;
             puzzle[id].puzzleSet = state;
+        }
+
+        public void setTrap(int id, int state)
+        {
+            csNetworkManager.flag = 4;
+            trap[id].trapSet = state;
         }
 
         public int getKillID()
@@ -626,11 +653,18 @@ namespace Client
         static public TCPClient TCPclient;
         static public UDPClient UDPclient;
 
+        static public Client_State[] Clients;
+
+        private void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+
         private void Start()
         {
             quit = true;
 
-            Client_State[] Clients = new Client_State[csMain.MAXCOUNT.MAX_CLIENT];
+            Clients = new Client_State[csMain.MAXCOUNT.MAX_CLIENT];
             for (int i = 0; i < Clients.Length; i++)
             {
                 //OtherClients 초기화
@@ -648,19 +682,54 @@ namespace Client
             TCPclient = new TCPClient(Clients, eventstate.getPuzzle(), eventstate.getTrap(), eventstate.getAni());
             TCPclient.TCPServerInit();
             TCPclient.recvClientID();
+            TCPclient.GameWait();
 
             UDPclient = new UDPClient(TCPclient.getMyID(), Clients);
             UDPclient.UDPServerInit();
             UDPclient.snedClientAddr();
+            UDPclient.SendThreadCreate();
+            UDPclient.RecvThreadCreate();
+        }
 
+        public void GameSceneStart()
+        {
+            TCPclient.recvRandomIdx();
+            UDPclient.SendThreadStart();
+            UDPclient.RecvThreadStart();
+            TCPclient.TCPThreadStart();
+        }
+
+        public void GameStart()
+        {
+            TCPclient.sendGameStart();          
+        }
+
+        public void GameReady()
+        {
+            TCPclient.GameReady();
+        }
+
+        public void GameExit()
+        {
+            TCPclient.GameExit();
+        }
+
+        public void InitialAndThread()
+        {
             TCPclient.recvRandomIdx();
 
-            UDPclient.UDPThreadStart();
-
+            //UDPclient.UDPThreadStart();
+            UDPclient.SendThreadStart();
+            UDPclient.RecvThreadStart();
             TCPclient.TCPThreadStart();
         }
 
         private void OnDisable()
+        {
+            DisConnect();
+        }
+
+        public void DisConnect()
         {
             quit = false;
 

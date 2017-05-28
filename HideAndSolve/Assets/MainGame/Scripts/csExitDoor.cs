@@ -7,13 +7,9 @@ public class csExitDoor : MonoBehaviour {
 
     public GameObject ObjectExit;
 
-	// Use this for initialization
-	void Start () {
-  
-	}
-	
-	// Update is called once per frame
 	void Update () {
+
+        // 퍼즐을 모두 풀었을 경우 탈출구 생성
         if (csMain.puzzleCount == 0)
         {
             int iCount = ObjectExit.transform.childCount;
@@ -29,6 +25,7 @@ public class csExitDoor : MonoBehaviour {
 
     void OnTriggerExit( Collider other)
     {
+        // 탈출구를 통과하면 GameOver 화면으로 통과
         GotoGameOver();
     }
 

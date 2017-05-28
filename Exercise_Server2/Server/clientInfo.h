@@ -10,7 +10,7 @@
 
 using namespace std;
 
-#define CLIENT_MAX 2
+#define CLIENT_MAX 4
 #define DEFAULT_PORT 36872
 #define PUZZLE_MAX 6
 #define TRAP_MAX 2
@@ -32,6 +32,7 @@ struct ClientState {
 	int id;
 	Pos pos;
 	SOCKET clientTCPSock;
+	SOCKADDR_IN clientTCPAddr;
 	SOCKADDR_IN clientUDPAddr;
 	int clientUDPAddrSize;
 };
@@ -40,6 +41,11 @@ struct eventPacket {
 	int flag;
 	int id;	//퍼즐/함정 이벤트의 경우 해당 퍼즐/함정의 ID값
 	int Set;
+};
+
+struct RoomPacket {
+	int id;
+	int set;
 };
 
 void ErrorHandling(string);
