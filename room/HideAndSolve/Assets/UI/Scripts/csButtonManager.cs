@@ -15,13 +15,7 @@ public class csButtonManager : MonoBehaviour
     public Button btNext;
     public Button btPrev;
 
-    //public Text[] Users = new Text[csMain.MAXCOUNT.MAX_CLIENT];
     public Text[] Users = new Text[5];
-    public Text U1;
-    public Text U2;
-    public Text U3;
-    public Text U4;
-    public Text U5;
 
     public Text Loading;
 
@@ -31,12 +25,6 @@ public class csButtonManager : MonoBehaviour
 
     private void Start()
     {
-        Users[0] = U1;
-        Users[1] = U2;
-        Users[2] = U3;
-        Users[3] = U4;
-        Users[4] = U5;
-
         checkConnect = true;
         startSet = true;
         exitSet = true;
@@ -68,11 +56,9 @@ public class csButtonManager : MonoBehaviour
 
     public void UserEntranceSet()
     {
-        int[] userList = new int[csMain.MAXCOUNT.MAX_CLIENT];
-        userList = csNetworkManager.TCPclient.getUserList();
         for(int i=0; i<csMain.MAXCOUNT.MAX_CLIENT; i++)
         {
-            if (userList[i] == 1)
+            if (csNetworkManager.TCPclient.getUserList()[i] == 1) 
             {
                 Users[i].text = "User" + i;
             }
@@ -80,7 +66,6 @@ public class csButtonManager : MonoBehaviour
             {
                 Users[i].text = "...";
             }
-            
         }
     }
 
@@ -111,5 +96,6 @@ public class csButtonManager : MonoBehaviour
     public void disConnect()
     {
         netManager.GetComponent<csNetworkManager>().DisConnect();
+        //netManager.GetComponent<csNetworkManager>().TCPDisConnect();
     }
 }

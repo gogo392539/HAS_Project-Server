@@ -11,6 +11,8 @@ private:
 	thread sendUDPPosThread;
 	int *connectNum;
 
+	bool sendThreadSet;
+
 public:
 	UDPServer();
 	UDPServer(ClientState clients[], int *clientNum);

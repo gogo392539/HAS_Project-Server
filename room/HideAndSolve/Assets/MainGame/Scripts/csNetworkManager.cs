@@ -227,6 +227,9 @@ namespace Client
 
         public void SendPosFunc()
         {
+
+            snedClientAddr();
+
             Byte[] UDPdata = new Byte[28];
             while (csNetworkManager.quit)
             {
@@ -234,6 +237,7 @@ namespace Client
                 {
                     UDPdata = byteAndStruct.StructureToByte(Clients[myID]);
                     UDPclient.SendTo(UDPdata, UDPdata.Length, SocketFlags.None, serverIpep);
+                    Debug.Log("send : " + Clients[myID].id + ", " + Clients[myID].pos.x);                   
                 }
                 Thread.Sleep(10);
             } // while end
@@ -256,9 +260,7 @@ namespace Client
                 UDPclient.ReceiveFrom(tempUDPdata, SocketFlags.None, ref remoteIpep);
                 temp = (Client_State)byteAndStruct.ByteToStructure(tempUDPdata, temp.GetType());
 
-                //Debug.Log(temp.id);
-                //Debug.Log(temp.pos.x);
-                //Debug.Log(Clients[myID].id);
+                Debug.Log("recv : " + temp.id + ", " + temp.pos.x);
 
                 switch (temp.id)
                 {
@@ -378,6 +380,7 @@ namespace Client
             TCPclient.Receive(recvIDData);
             myID = BitConverter.ToInt32(recvIDData, 0);     // byte[] to int32 
             clients[myID].id = myID;    //6.11 추가
+            Debug.Log("ID : " + myID);
 
             TCPclient.Receive(CLData);
             for (int i = 0; i < userEntranceList.Length; i++)
@@ -448,6 +451,7 @@ namespace Client
                 else if (recvPacket.flag == 2) {
                     //client exit
                     //roomPacket exitPacket;
+                    userEntranceList[recvPacket.id] = -1;
 
                 }
                 else if (recvPacket.flag == 3) {
@@ -456,7 +460,7 @@ namespace Client
                     startPacket.flag = 4;
                     startPacket.id = myID;
                     sendData = byteAndStruct.StructureToByte(startPacket);
-                    TCPclient.Send(sendData);
+                    TCPclient.Send(sendData);                   
                     GameStartSet = 1;
                     break;
                 }
@@ -640,6 +644,11 @@ namespace Client
             }
         }
 
+        public Client_State[] getClients()
+        {
+            return clients;
+        }
+
         public clientAnimation[] getAni()
         {
             return ani;
@@ -706,12 +715,6 @@ namespace Client
             {
                 //OtherClients 초기화
                 Clients[i].id = -1;
-                Clients[i].pos.x = -1;
-                Clients[i].pos.y = -1;
-                Clients[i].pos.z = -1;
-                Clients[i].pos.rotX = -1;
-                Clients[i].pos.rotY = -1;
-                Clients[i].pos.rotZ = -1;
             }
 
             eventState eventstate = new eventState();
@@ -723,13 +726,17 @@ namespace Client
 
             UDPclient = new UDPClient(TCPclient.getMyID(), Clients);
             UDPclient.UDPServerInit();
-            UDPclient.snedClientAddr();            
-        }
+           // UDPclient.snedClientAddr();
+        }    
 
         public void GameSceneStart()
         {
-            TCPclient.recvRandomIdx();                                            
-            UDPclient.UDPThreadStart();            
+            //UDPclient = new UDPClient(TCPclient.getMyID(), TCPclient.getClients());
+            //UDPclient.UDPServerInit();
+            //UDPclient.snedClientAddr();
+
+            TCPclient.recvRandomIdx();            
+            UDPclient.UDPThreadStart();
             TCPclient.TCPThreadStart();
         }
 

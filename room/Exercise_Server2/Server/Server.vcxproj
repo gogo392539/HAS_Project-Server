@@ -147,11 +147,13 @@
     <ClCompile Include="classUdp.cpp" />
     <ClCompile Include="clientInfo.cpp" />
     <ClCompile Include="server.cpp" />
+    <ClCompile Include="temp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="classTcp.h" />
     <ClInclude Include="classUdp.h" />
     <ClInclude Include="clientInfo.h" />
+    <ClInclude Include="temp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -9,7 +9,7 @@ public class csMain : MonoBehaviour
     // 각 오브젝트의 최대 개수
     public class MAXCOUNT
     {
-        public const int MAX_CLIENT = 2;
+        public const int MAX_CLIENT = 3;
         public const int MAX_PUZZLE = 8;
         public const int MAX_TRAP = 3;
         public const int MAX_ROOMPACKET = 8;

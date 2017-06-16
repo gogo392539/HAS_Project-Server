@@ -12,13 +12,15 @@ private:
 	SOCKADDR_IN clientTCPAddr;
 	int clientTCPAddrsz;
 
+	int tempid;
+	bool AcceptStartSet;
+
 	int taggerUserID;
 	
 	thread TCPThread;
 	thread Client_Thread[CLIENT_MAX];
 
 	thread Room_Thread[CLIENT_MAX];
-	bool GameStartSet;
 	int ClientListSet[CLIENT_MAX];
 
 	eventPacket eventpacket;

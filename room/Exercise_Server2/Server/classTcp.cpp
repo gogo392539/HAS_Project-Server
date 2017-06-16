@@ -10,7 +10,8 @@ TCPServer::TCPServer(ClientState clients[], int *clientNum) {
 	connectNum = clientNum;
 	taggerUserID = -1;
 
-	GameStartSet = true;
+	AcceptStartSet = true;
+	tempid = -1;
 
 	for (int i = 0; i < CLIENT_MAX; i++) {
 		ClientListSet[i] = -1;
@@ -39,24 +40,6 @@ void TCPServer::serverStart() {
 		ErrorHandling("listen() Join");
 }
 
-//void TCPServer::clientAccept() {
-//	//accept() and client에게 id값 전달 (연결 요청 수락)
-//	while (*connectNum < CLIENT_MAX) {
-//		clientTCPAddrsz = sizeof(clientTCPAddr);
-//		clientState[*connectNum].clientTCPSock = accept(serverListenSock, (sockaddr*)&clientTCPAddr, &clientTCPAddrsz);
-//		if (clientState[*connectNum].clientTCPSock == INVALID_SOCKET)
-//			ErrorHandling("accept()");
-//
-//		clientState[*connectNum].id = *connectNum;
-//		cout << "connect" << *connectNum << endl;
-//
-//		int sendNum = sendn(clientState[*connectNum].clientTCPSock, (char*)&clientState[*connectNum].id, sizeof(clientState[*connectNum].id), 0);
-//		if (sendNum == SOCKET_ERROR)
-//			ErrorHandling("sendn");
-//		(*connectNum)++;
-//	}
-//}
-
 void TCPServer::RoomThreadJoin() {
 	for (int i = 0; i < CLIENT_MAX; i++) {
 		Room_Thread[i].join();
@@ -64,29 +47,46 @@ void TCPServer::RoomThreadJoin() {
 }
 
 void TCPServer::RoomThreadStart() {
-	for (int i = 0; i < CLIENT_MAX; i++) {
+	while (AcceptStartSet) {
 		clientTCPAddrsz = sizeof(clientTCPAddr);
-		clientState[i].clientTCPSock = accept(serverListenSock, (sockaddr*)&clientTCPAddr, &clientTCPAddrsz);
-		if (clientState[*connectNum].clientTCPSock == INVALID_SOCKET)
-			ErrorHandling("accept()");
+		SOCKET incoming = INVALID_SOCKET;
 
-		clientState[i].id = i;
-		cout << "connect" << i << endl;
+		tempid = -1;
 
-		int sendNum = sendn(clientState[i].clientTCPSock, (char*)&clientState[i].id, sizeof(clientState[i].id), 0);
-		if (sendNum == SOCKET_ERROR)
-			ErrorHandling("sendn");
+		if ((*connectNum) != CLIENT_MAX) {
+			incoming = accept(serverListenSock, (sockaddr*)&clientTCPAddr, &clientTCPAddrsz);
+			if (incoming == INVALID_SOCKET)
+				continue;
 
-		ClientListSet[i] = 1;
-		(*connectNum)++;
+			for (int i = 0; i < CLIENT_MAX; i++) {
+				if (clientState[i].clientTCPSock == INVALID_SOCKET && tempid == -1) {
+					clientState[i].clientTCPSock = incoming;
+					clientState[i].id = i;
+					tempid = i;
+					(*connectNum)++;
+					
+				}
+			} // for end
+			cout << "clientNum : " << (*connectNum) << endl;
+		}
 
-		sendNum = sendn(clientState[i].clientTCPSock, (char*)&ClientListSet, sizeof(int) * 2, 0);
-		if (sendNum == SOCKET_ERROR)
-			ErrorHandling("sendn");
+		if (tempid != -1) {
+			cout << "connect" << tempid << endl;
 
+			int sendNum = sendn(clientState[tempid].clientTCPSock, (char*)&clientState[tempid].id, sizeof(clientState[tempid].id), 0);
+			if (sendNum == SOCKET_ERROR)
+				ErrorHandling("sendn");
 
-		Room_Thread[i] = thread([&] {RoomThreadMain(i); });		
-	}
+			ClientListSet[tempid] = 1;
+
+			sendNum = sendn(clientState[tempid].clientTCPSock, (char*)&ClientListSet, sizeof(int) * CLIENT_MAX, 0);
+			if (sendNum == SOCKET_ERROR)
+				ErrorHandling("sendn");
+
+			Room_Thread[tempid] = thread([&] {RoomThreadMain(tempid); });
+		}
+	} //while end
+	cout << "RoomThreadStart end" << endl;
 }
 
 int TCPServer::RoomThreadMain(int id) {
@@ -96,47 +96,16 @@ int TCPServer::RoomThreadMain(int id) {
 	int recvNum;
 
 	while (1) {
-
-		if (ID == -1) {
-			/*for (int i = 0; i < CLIENT_MAX; i++) {
-				if (ClientListSet[i] != -1) {
-					clientTCPAddrsz = sizeof(clientTCPAddr);
-					clientState[i].clientTCPSock = accept(serverListenSock, (sockaddr*)&clientTCPAddr, &clientTCPAddrsz);
-					if (clientState[*connectNum].clientTCPSock == INVALID_SOCKET)
-						ErrorHandling("accept()");
-
-					clientState[i].id = i;
-					cout << "connect" << i << endl;
-
-					int sendNum = sendn(clientState[*connectNum].clientTCPSock, (char*)&clientState[i].id, sizeof(clientState[i].id), 0);
-					if (sendNum == SOCKET_ERROR)
-						ErrorHandling("sendn");
-					ID = i;
-				}	*/
-			ID = id;
-			clientTCPAddrsz = sizeof(clientTCPAddr);
-			clientState[ID].clientTCPSock = accept(serverListenSock, (sockaddr*)&clientTCPAddr, &clientTCPAddrsz);
-			if (clientState[*connectNum].clientTCPSock == INVALID_SOCKET)
-				ErrorHandling("accept()");
-
-			clientState[ID].id = ID;
-			cout << "reconnect" << ID << endl;
-
-			int sendNum = sendn(clientState[ID].clientTCPSock, (char*)&clientState[ID].id, sizeof(clientState[ID].id), 0);
-			if (sendNum == SOCKET_ERROR)
-				ErrorHandling("sendn");
-
-			mx.lock();
-			(*connectNum)++;
-			ClientListSet[ID] = 1;
-			mx.unlock();
-
-		}
-
 		roomPacket recvPacket;
 		recvPacket.flag = -1;
 		recvPacket.id = -1;
 		recvNum = recvn(clientState[ID].clientTCPSock, (char*)&recvPacket, ROOMPACKET_SIZE, 0);
+
+		if (recvNum == -1 && recvNum == 0) {
+			cout << "recvNum == EOF" << endl;
+			break;
+		}
+
 		if (recvPacket.flag == 1) {
 			//client entrance
 			roomPacket enterPacket;
@@ -146,11 +115,7 @@ int TCPServer::RoomThreadMain(int id) {
 				if ( (i != ID) && (clientState[i].id != -1) ) {
 					sendNum = sendn(clientState[i].clientTCPSock, (char*)&enterPacket, ROOMPACKET_SIZE, 0);
 				}
-			}
-			/*mx.lock();
-			(*connectNum)++;
-			ClientListSet[recvPacket.id] = 1;
-			mx.unlock();*/
+			}			
 			cout << "client#" << recvPacket.id << " enter" << endl;
 
 			if ((*connectNum) == CLIENT_MAX) {
@@ -189,9 +154,9 @@ int TCPServer::RoomThreadMain(int id) {
 			ClientListSet[recvPacket.id] = -1;
 			mx.unlock();
 			closesocket(clientState[ID].clientTCPSock);
-			clientState[ID].clientTCPSock = INVALID_SOCKET;
-			ID = -1;
+			clientState[ID].clientTCPSock = INVALID_SOCKET;			
 			cout << "client#" << recvPacket.id << " exit" << endl;
+			break;
 		}
 		else if (recvPacket.flag == 3) {
 			//Game Start
@@ -203,7 +168,8 @@ int TCPServer::RoomThreadMain(int id) {
 					sendNum = sendn(clientState[i].clientTCPSock, (char*)&startPacket, ROOMPACKET_SIZE, 0);
 				}
 			}
-			cout << "Game Start" << endl;
+			AcceptStartSet = false;
+			cout << "Game Start" << endl;			
 		}
 		else if (recvPacket.flag == 4) {
 			//Thread exit
@@ -212,10 +178,9 @@ int TCPServer::RoomThreadMain(int id) {
 	} // while end
 
 	cout << "RoomThreadMain#" << ID << " end" << endl;
-
+	Room_Thread[ID].detach();
 	return 0;
 }
-
 
 void TCPServer::TCPServerClosed() {
 	for (int i = 0; i < CLIENT_MAX; i++) {
