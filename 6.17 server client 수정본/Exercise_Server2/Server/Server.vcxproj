@@ -144,6 +144,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="classTcp.cpp" />
+    <ClCompile Include="classTcpEvent.cpp" />
+    <ClCompile Include="classTcpRoom.cpp" />
     <ClCompile Include="classUdp.cpp" />
     <ClCompile Include="clientInfo.cpp" />
     <ClCompile Include="server.cpp" />

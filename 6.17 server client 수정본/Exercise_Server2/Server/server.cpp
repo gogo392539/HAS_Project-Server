@@ -1,7 +1,6 @@
 #include "classTcp.h"
 #include "classUdp.h"
 #include "temp.h"
-//#include "totalserver.h"
 
 int main()
 {
