@@ -1,8 +1,9 @@
-﻿  server.cpp
-  classTcp.cpp
+﻿  classTcp.cpp
   코드를 생성하고 있습니다...
-  건너뛰고 있습니다... (관련된 변경 내용 없음)
+  컴파일하고 있습니다...
+  server.cpp
   clientInfo.cpp
   classUdp.cpp
-  Server.vcxproj -> C:\Users\seo\Desktop\trap문제 해결\Exercise_Server2\Debug\Server.exe
-  Server.vcxproj -> C:\Users\seo\Desktop\trap문제 해결\Exercise_Server2\Debug\Server.pdb (Full PDB)
+  코드를 생성하고 있습니다...
+  Server.vcxproj -> C:\Users\seo\Documents\HAS_Project-Server\room 미구현 server\Exercise_Server2\Debug\Server.exe
+  Server.vcxproj -> C:\Users\seo\Documents\HAS_Project-Server\room 미구현 server\Exercise_Server2\Debug\Server.pdb (Full PDB)

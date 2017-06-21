@@ -26,21 +26,21 @@ int main()
 
 		UDPserver.receiveClientAddr();			//UDP server가 client들과 통신을 위해 client들의 주소값을 저장하고 sync를 맞추는 부분
 
-		UDPserver.recvUDPThreadFunc();			//UDP server가 client들의 좌표정보를 받는 thread
+		UDPserver.recvThreadStart();			//UDP server가 client들의 좌표정보를 받는 thread
 		TCPserver.sendRandomIdx();				//client들에게 random index전달
 		TCPserver.sendTaggerUserID();
-		UDPserver.sendUDPThreadFunc();			//UDP server가 client들로부터 받은 좌표정보를 전달하는 thread
+		UDPserver.sendThreadStart();			//UDP server가 client들로부터 받은 좌표정보를 전달하는 thread
 
 		TCPserver.TCPThreadStart();
 
-		UDPserver.UDPThreadJoin();
+		UDPserver.threadJoin();
 		cout << "UDP thread end" << endl;
 
 		TCPserver.TCPThreadJoin();
 		cout << "TCP thread end" << endl;
 
 		TCPserver.TCPServerClosed();
-		UDPserver.UDPServerClosed();
+		UDPserver.serverClosed();
 
 		cout << endl;
 		cout << "server closed" << endl;
